@@ -9,8 +9,8 @@ def main():
     Main function to run the stock monitor.
     """
     # Get the absolute path to the config file
-    script_dir = os.path.dirname(__file__)
-    config_path = os.path.join(script_dir, "../config/stocks.yaml")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "..", "config", "stocks.yaml")
 
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)

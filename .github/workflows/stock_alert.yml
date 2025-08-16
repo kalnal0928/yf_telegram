@@ -2,6 +2,8 @@ name: Stock Price Alerter
 
 on:
   workflow_dispatch: # Allows manual triggering
+  schedule:
+    - cron: '0 0 * * *' # Runs at 00:00 UTC (9 AM KST) every day
 
 jobs:
   build:

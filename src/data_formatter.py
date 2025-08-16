@@ -18,6 +18,7 @@ def format_stock_data(stock_data):
         change_percent = data.get("change_percent", 0)
         weekly_change = data.get("weekly_change", 0)
         weekly_change_percent = data.get("weekly_change_percent", 0)
+        daily_changes = data.get("daily_changes", [])
         volume = data.get("volume", 0)
         pe_ratio = data.get("pe_ratio", "N/A")
         fifty_two_week_high = data.get("fifty_two_week_high", 0)
@@ -30,7 +31,15 @@ def format_stock_data(stock_data):
         message += f"🍎 {name} ({ticker})\n"
         message += f"💰 일일 변동: ${current_price:.2f} ({sign}{change:.2f}, {sign}{change_percent:.2f}%) {emoji}\n"
         message += f"🗓️ 주간 변동: {weekly_sign}{weekly_change:.2f} ({weekly_sign}{weekly_change_percent:.2f}%)\n"
-        message += f"📈 52주 최고가: ${fifty_two_week_high:.2f} | 📉 52주 최저가: ${fifty_two_week_low:.2f}\n"
+        
+        if daily_changes:
+            message += "\n📅 주간 일별 등락:\n"
+            for daily_change in daily_changes:
+                daily_sign = "+" if daily_change['change'] > 0 else ""
+                daily_emoji = "📈" if daily_change['change'] > 0 else "📉"
+                message += f"- {daily_change['date']}: {daily_sign}{daily_change['change']:.2f} ({daily_sign}{daily_change['change_percent']:.2f}%) {daily_emoji}\n"
+
+        message += f"\n📈 52주 최고가: ${fifty_two_week_high:.2f} | 📉 52주 최저가: ${fifty_two_week_low:.2f}\n"
         message += f"📊 거래량: {volume:,} | PER: {pe_ratio}\n\n"
 
     return message

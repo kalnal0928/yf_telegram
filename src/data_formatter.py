@@ -16,6 +16,8 @@ def format_stock_data(stock_data):
         current_price = data.get("current_price", 0)
         change = data.get("change", 0)
         change_percent = data.get("change_percent", 0)
+        weekly_change = data.get("weekly_change", 0)
+        weekly_change_percent = data.get("weekly_change_percent", 0)
         volume = data.get("volume", 0)
         pe_ratio = data.get("pe_ratio", "N/A")
         fifty_two_week_high = data.get("fifty_two_week_high", 0)
@@ -23,9 +25,11 @@ def format_stock_data(stock_data):
 
         emoji = "📈" if change > 0 else "📉"
         sign = "+" if change > 0 else ""
+        weekly_sign = "+" if weekly_change > 0 else ""
 
         message += f"🍎 {name} ({ticker})\n"
-        message += f"💰 ${current_price:.2f} ({sign}{change:.2f}, {sign}{change_percent:.2f}%) {emoji}\n"
+        message += f"💰 일일 변동: ${current_price:.2f} ({sign}{change:.2f}, {sign}{change_percent:.2f}%) {emoji}\n"
+        message += f"🗓️ 주간 변동: {weekly_sign}{weekly_change:.2f} ({weekly_sign}{weekly_change_percent:.2f}%)\n"
         message += f"📈 52주 최고가: ${fifty_two_week_high:.2f} | 📉 52주 최저가: ${fifty_two_week_low:.2f}\n"
         message += f"📊 거래량: {volume:,} | PER: {pe_ratio}\n\n"
 

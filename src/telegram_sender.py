@@ -1,6 +1,10 @@
-# The `python-telegram-bot` package provides the `telegram` module.
 import telegram
 import os
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def send_telegram_message(message):
     """
@@ -9,19 +13,44 @@ def send_telegram_message(message):
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
 
-    if not bot_token or not chat_id:
-        print("Error: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment variables not set.")
-        return
+    logger.info(f"Bot token exists: {bool(bot_token)}")
+    logger.info(f"Chat ID exists: {bool(chat_id)}")
+
+    if not bot_token:
+        logger.error("TELEGRAM_BOT_TOKEN environment variable is not set")
+        return False
+    
+    if not chat_id:
+        logger.error("TELEGRAM_CHAT_ID environment variable is not set")
+        return False
 
     try:
         bot = telegram.Bot(token=bot_token)
-        bot.send_message(chat_id=chat_id, text=message, parse_mode=telegram.ParseMode.MARKDOWN)
-        print("Message sent successfully!")
+        logger.info("Bot instance created successfully")
+        
+        # 채팅 ID 유효성 검사
+        chat_info = bot.get_chat(chat_id=chat_id)
+        logger.info(f"Chat info: {chat_info.title if hasattr(chat_info, 'title') else 'Private chat'}")
+        
+        result = bot.send_message(chat_id=chat_id, text=message, parse_mode=telegram.ParseMode.MARKDOWN)
+        logger.info(f"Message sent successfully! Message ID: {result.message_id}")
+        return True
+        
+    except telegram.error.Unauthorized:
+        logger.error("Bot token is invalid or bot is not authorized")
+        return False
+    except telegram.error.ChatNotFound:
+        logger.error(f"Chat ID {chat_id} not found or bot is not a member")
+        return False
+    except telegram.error.Forbidden:
+        logger.error("Bot is not allowed to send messages to this chat")
+        return False
     except Exception as e:
-        print(f"Error sending message to Telegram: {e}")
+        logger.error(f"Unexpected error sending message to Telegram: {e}")
+        return False
 
 if __name__ == '__main__':
-    # For testing purposes. 
-    # You need to set the environment variables TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+    # 테스트용
     test_message = "*Test message* from the stock monitor!"
-    send_telegram_message(test_message)
+    success = send_telegram_message(test_message)
+    print(f"Message sent: {success}")

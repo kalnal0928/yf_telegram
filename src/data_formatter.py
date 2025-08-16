@@ -9,7 +9,7 @@ def format_stock_data(stock_data):
 
     for ticker, data in stock_data.items():
         if data is None:
-            message += f"Failed to fetch data for {ticker}\n\n"
+            message += f"{ticker} 데이터를 가져오는데 실패했습니다.\n\n"
             continue
 
         name = data.get("name", ticker)
@@ -26,8 +26,8 @@ def format_stock_data(stock_data):
 
         message += f"🍎 {name} ({ticker})\n"
         message += f"💰 ${current_price:.2f} ({sign}{change:.2f}, {sign}{change_percent:.2f}%) {emoji}\n"
-        message += f"📈 52W High: ${fifty_two_week_high:.2f} | 📉 52W Low: ${fifty_two_week_low:.2f}\n"
-        message += f"📊 Volume: {volume:,} | P/E: {pe_ratio}\n\n"
+        message += f"📈 52주 최고가: ${fifty_two_week_high:.2f} | 📉 52주 최저가: ${fifty_two_week_low:.2f}\n"
+        message += f"📊 거래량: {volume:,} | PER: {pe_ratio}\n\n"
 
     return message
 

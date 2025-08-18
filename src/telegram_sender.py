@@ -2,6 +2,8 @@ import telegram
 import os
 import logging
 import asyncio
+from telegram.constants import ParseMode
+from telegram.error import BadRequest, Unauthorized, Forbidden
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -29,20 +31,20 @@ async def send_telegram_message(message):
         bot = telegram.Bot(token=bot_token)
         logger.info("Bot instance created successfully")
         
-        # The new API does not have get_chat, so we can't validate the chat_id beforehand.
-        # We will catch the exception on send_message instead.
-        
-        result = await bot.send_message(chat_id=chat_id, text=message, parse_mode=telegram.constants.ParseMode.MARKDOWN)
+        result = await bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
         logger.info(f"Message sent successfully! Message ID: {result.message_id}")
         return True
         
-    except telegram.error.Unauthorized:
+    except Unauthorized:
         logger.error("Bot token is invalid or bot is not authorized")
         return False
-    except telegram.error.ChatNotFound:
-        logger.error(f"Chat ID {chat_id} not found or bot is not a member")
+    except BadRequest as e:
+        if "Chat not found" in e.message:
+            logger.error(f"Chat ID {chat_id} not found or bot is not a member")
+        else:
+            logger.error(f"Bad request error: {e.message}")
         return False
-    except telegram.error.Forbidden:
+    except Forbidden:
         logger.error("Bot is not allowed to send messages to this chat")
         return False
     except Exception as e:

@@ -1,14 +1,15 @@
 import telegram
 import os
 import logging
+import asyncio
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def send_telegram_message(message):
+async def send_telegram_message(message):
     """
-    Sends a message to a Telegram chat.
+    Sends a message to a Telegram chat asynchronously.
     """
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
@@ -28,11 +29,10 @@ def send_telegram_message(message):
         bot = telegram.Bot(token=bot_token)
         logger.info("Bot instance created successfully")
         
-        # 채팅 ID 유효성 검사
-        chat_info = bot.get_chat(chat_id=chat_id)
-        logger.info(f"Chat info: {chat_info.title if hasattr(chat_info, 'title') else 'Private chat'}")
+        # The new API does not have get_chat, so we can't validate the chat_id beforehand.
+        # We will catch the exception on send_message instead.
         
-        result = bot.send_message(chat_id=chat_id, text=message, parse_mode=telegram.ParseMode.MARKDOWN)
+        result = await bot.send_message(chat_id=chat_id, text=message, parse_mode=telegram.constants.ParseMode.MARKDOWN)
         logger.info(f"Message sent successfully! Message ID: {result.message_id}")
         return True
         
@@ -52,5 +52,4 @@ def send_telegram_message(message):
 if __name__ == '__main__':
     # 테스트용
     test_message = "*Test message* from the stock monitor!"
-    success = send_telegram_message(test_message)
-    print(f"Message sent: {success}")
+    asyncio.run(send_telegram_message(test_message))

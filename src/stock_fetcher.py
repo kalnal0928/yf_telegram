@@ -62,9 +62,52 @@ def get_stock_data(tickers):
             data[ticker] = None
     return data
 
+def check_vix_alert():
+    """
+    Checks for VIX alert conditions.
+    """
+    try:
+        vix = yf.Ticker("^VIX")
+        hist = vix.history(period="2d")
+
+        if hist.empty or len(hist) < 2:
+            print("Warning: Not enough history found for VIX, skipping alert check.")
+            return None
+
+        current_price = hist['Close'].iloc[-1]
+        previous_close = hist['Close'].iloc[-2]
+        
+        price_alert = current_price > 25
+        
+        change_percent = ((current_price - previous_close) / previous_close) * 100
+        percent_alert = change_percent > 20
+
+        if price_alert or percent_alert:
+            return {
+                "current_price": current_price,
+                "change_percent": change_percent,
+                "price_alert": price_alert,
+                "percent_alert": percent_alert
+            }
+            
+    except Exception as e:
+        print(f"Error checking VIX alert: {e}")
+    
+    return None
+
 if __name__ == '__main__':
     # For testing purposes
     sample_tickers = ["AAPL", "GOOGL"]
     stock_data = get_stock_data(sample_tickers)
     import json
+    print("--- Stock Data ---")
     print(json.dumps(stock_data, indent=4))
+
+    print("\n--- VIX Alert Check ---")
+    vix_alert_data = check_vix_alert()
+    if vix_alert_data:
+        from data_formatter import format_vix_alert
+        alert_message = format_vix_alert(vix_alert_data)
+        print(alert_message)
+    else:
+        print("No VIX alert.")

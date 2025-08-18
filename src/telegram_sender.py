@@ -3,7 +3,7 @@ import os
 import logging
 import asyncio
 from telegram.constants import ParseMode
-from telegram.error import BadRequest, Unauthorized, Forbidden
+from telegram.error import BadRequest, Forbidden, InvalidToken, TelegramError
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -35,17 +35,21 @@ async def send_telegram_message(message):
         logger.info(f"Message sent successfully! Message ID: {result.message_id}")
         return True
         
-    except Unauthorized:
-        logger.error("Bot token is invalid or bot is not authorized")
+    except InvalidToken:
+        logger.error("Bot token format is invalid")
         return False
     except BadRequest as e:
-        if "Chat not found" in e.message:
+        if "Chat not found" in getattr(e, "message", str(e)):
             logger.error(f"Chat ID {chat_id} not found or bot is not a member")
         else:
-            logger.error(f"Bad request error: {e.message}")
+            logger.error(f"Bad request error: {getattr(e, 'message', str(e))}")
         return False
     except Forbidden:
         logger.error("Bot is not allowed to send messages to this chat")
+        return False
+    except TelegramError as e:
+        # Generic Telegram API error (may include unauthorized/401 or other API errors)
+        logger.error(f"Telegram API error: {getattr(e, 'message', str(e))}")
         return False
     except Exception as e:
         logger.error(f"Unexpected error sending message to Telegram: {e}")
